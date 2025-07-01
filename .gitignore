@@ -1,0 +1,85 @@
+# =============================================================================
+#  Environment Variables
+# =============================================================================
+# Ignore environment variables files. Do not commit sensitive keys and settings.
+.env
+*.env
+.env.*
+
+# =============================================================================
+#  Python Virtual Environments
+# =============================================================================
+# Ignore virtual environment directories.
+.venv/
+venv/
+env/
+ENV/
+
+# =============================================================================
+#  Python Artifacts, Caches, and Dependencies
+# =============================================================================
+# Ignore Python cache and compiled files.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Ignore egg-info directories, which store package metadata.
+*.egg-info/
+
+# Ignore package management files
+pip-wheel-metadata/
+pip-selfcheck.json
+pyvenv.cfg
+
+# =============================================================================
+#  Testing
+# =============================================================================
+# Ignore testing and coverage artifacts.
+.pytest_cache/
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+
+# =g============================================================================
+#  Build and Distribution
+# =============================================================================
+# Ignore distribution and build artifacts.
+dist/
+build/
+*.egg
+wheels/
+
+# =============================================================================
+#  Editor & IDE Settings
+# =============================================================================
+# Ignore Visual Studio Code settings.
+.vscode/
+
+# Ignore JetBrains (PyCharm, etc.) IDE settings.
+.idea/
+
+# =============================================================================
+#  Operating System Files
+# =============================================================================
+# Ignore macOS specific files.
+.DS_Store
+
+# Ignore Windows specific files.
+Thumbs.db
+desktop.ini
+
+# =============================================================================
+#  Logs & Runtime Files
+# =============================================================================
+# Ignore log files.
+*.log
+logs/
+
+# =============================================================================
+#  Jupyter Notebook
+# =============================================================================
+# Ignore Jupyter Notebook checkpoint files.
+.ipynb_checkpoints
