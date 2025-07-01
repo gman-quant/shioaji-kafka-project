@@ -29,8 +29,8 @@
 
 在開始之前，請確保您已準備好以下環境：
 
-1.  **Python**: 建議版本 3.9 或以上。
-2.  **Apache Kafka**: 一個正在運行的 Kafka 叢集 (及 Zookeeper)。
+1.  **Python**: 建議版本 3.8 或以上。
+2.  **Apache Kafka**: 一個正在運行的 Kafka 叢集。
 3.  **Shioaji 帳戶**: 一組有效的永豐期貨 Shioaji API Key 及 Secret Key。
 
 ## 安裝與設定
