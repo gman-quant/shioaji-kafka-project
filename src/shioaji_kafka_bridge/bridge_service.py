@@ -51,19 +51,21 @@ class BridgeService:
 
     def _monitor_loop(self):
         """The main loop for monitoring connection health and trading times."""
-        logger.info("Monitoring thread started.")
+        logger.info("Monitoring loop started.")
         timeout_retries = 0
+        # --- Add a state variable for the warning if no tick ---
+        tick_flow_warning_active = False
         
         # Get initial market status 
         try:
-            dt_now = datetime.now()
+            dt_now = datetime.now(config.TW_TZ)
             was_trading = utils.is_trading_time(dt_now, self.day_off_date)
         except Exception as e:
             logger.error(f"Could not determine initial trading status for monitor loop: {e}")
             was_trading = False 
 
         while not self._stop_event.wait(config.MONITOR_INTERVAL):
-            dt_now = datetime.now()
+            dt_now = datetime.now(config.TW_TZ)
             is_currently_trading = utils.is_trading_time(dt_now, self.day_off_date)
 
             # Market status change detection
@@ -73,55 +75,64 @@ class BridgeService:
                 logger.info(status_msg)
                 logger.info("=" * 60)
                 
-                # Update market status for future checks
                 was_trading = is_currently_trading
-                # Reset last tick time when market status changed
                 self.last_tick_time = time.time() 
                 timeout_retries = 0
+                tick_flow_warning_active = False # Reset warning on status change
 
             if not is_currently_trading:
                 if self._shioaji_manager.subscribed:
                     logger.info("Unsubscribing from ticks.")
                     self._shioaji_manager.unsubscribe_ticks()
-                timeout_retries = 0 # Reset timeout counter when market is closed
+                timeout_retries = 0
                 continue
             
             # --- We are in trading hours from here ---
 
-            # If not subscribed during trading hours, something is wrong. Try to connect.
             if not self._shioaji_manager.subscribed:
                 logger.warning("Not subscribed during trading hours.")
                 try:
                     self._shioaji_manager.connect_and_subscribe()
-                    self.last_tick_time = time.time() 
                 except APILoginFetchError as e:
                     logger.error("Failed to connect during monitor cycle. Will retry. Reason: %s", e)
                 continue
 
             # --- Tick Health Check ---
             no_tick_duration = time.time() - self.last_tick_time
+
+            # 1. Major Timeout: Handles reconnection or holiday detection
             if no_tick_duration > config.TIMEOUT_SECONDS:
+                tick_flow_warning_active = False # Reset warning flag
+                
                 timeout_retries += 1
                 logger.warning(
                     "Tick timeout: No tick for %.0f seconds. (count %d/%d).",
                     no_tick_duration, timeout_retries, config.MAX_TIMEOUT_RETRIES
                 )
                 
-                if timeout_retries == config.MAX_TIMEOUT_RETRIES:
-                    if not kafka_handler.has_opening_kafka_ticks():
+                if timeout_retries >= config.MAX_TIMEOUT_RETRIES:
+                    if not kafka_handler.has_opening_kafka_ticks_optimized():
                         logger.warning("No ticks in Kafka either. Assuming it's a non-trading day.")
                         self.day_off_date = dt_now.date()
                         self._shioaji_manager.unsubscribe_ticks()
                         timeout_retries = 0
-                        continue # Skip to next monitor cycle
+                        continue
                     else:
-                         logger.info("Kafka has recent ticks. This is likely a connection issue, not a holiday.")
+                        logger.info("Kafka has recent ticks. This is likely a connection issue, not a holiday.")
                 
                 logger.error("Assuming connection issue. Forcing reconnection.")
                 self._shioaji_manager.reconnect(reason="Tick Timeout")
-            
+
+            # 2. Minor Timeout Warning: Log a warning if tick flow is slow
             elif no_tick_duration > 2 * config.MONITOR_INTERVAL:
-                logger.debug("No tick for %.0f seconds.", no_tick_duration)
+                logger.warning("Tick flow is slow. No new tick for %.0f seconds.", no_tick_duration)
+                tick_flow_warning_active = True # Set state to "warning"
+
+            # 3. Recovery Message: Log a recovery message only if it was previously in a warning state
+            else:
+                if tick_flow_warning_active:
+                    logger.info("Tick data flow has recovered.")
+                    tick_flow_warning_active = False # Reset state to "normal"
 
 
     def stop(self):
