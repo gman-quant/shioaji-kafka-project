@@ -106,7 +106,7 @@ class BridgeService:
                 
                 timeout_retries += 1
                 logger.warning(
-                    "Tick timeout: No tick for %.0f seconds. (count %d/%d).",
+                    "Tick timeout: No new tick for %.0f seconds. (count %d/%d).",
                     no_tick_duration, timeout_retries, config.MAX_TIMEOUT_RETRIES
                 )
                 
@@ -125,7 +125,7 @@ class BridgeService:
 
             # 2. Minor Timeout Warning: Log a warning if tick flow is slow
             elif no_tick_duration > 2 * config.MONITOR_INTERVAL:
-                logger.warning("Tick flow is slow. No new tick for %.0f seconds.", no_tick_duration)
+                logger.warning("No new tick for %.0f seconds.", no_tick_duration)
                 tick_flow_warning_active = True # Set state to "warning"
 
             # 3. Recovery Message: Log a recovery message only if it was previously in a warning state
