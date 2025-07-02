@@ -53,6 +53,9 @@ Follow these steps to set up your development environment:
     # Create the virtual environment
     python -m venv venv
 
+    # Activate on Windows (Use Git Bash)
+    source venv/Scripts/activate
+
     # Activate on macOS/Linux
     source venv/bin/activate
     ```
