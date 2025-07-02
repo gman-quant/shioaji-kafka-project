@@ -1,14 +1,17 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+
 ![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange)
+
 ![Shioaji](https://img.shields.io/badge/SHIOAJI-required-orange)
+
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 
 # Shioaji Kafka Bridge
 
-A production-ready service that streams real-time tick data from the Taiwan Futures Exchange (TAIFEX) via the Shioaji API and publishes it to Apache Kafka. Designed with high availability and modularity in mind.
+Production-ready service streaming real-time Taiwan Futures Exchange (TAIFEX) tick data via Shioaji API to Apache Kafka, built for high availability and modularity.
 
-> This project is ideal for trading systems or data pipelines that require high-frequency futures data ingestion from TAIFEX via Shioaji and distributed processing via Kafka.
+> Ideal for trading systems or data pipelines needing high-frequency TAIFEX futures data via Shioaji and Kafka.
 
 
 ---
@@ -42,7 +45,7 @@ A production-ready service that streams real-time tick data from the Taiwan Futu
 
 This project acts as a "bridge" in the system, with the following data flow:
 
-```
+```bash
 +----------------+      +------------------------+      +------------------------+
 |  Shioaji API   | <--> |  Shioaji Kafka Bridge  | ---> |      Apache Kafka      |
 | (Quote Source) |      |     (This Service)     |      |  (Streaming Platform)  |
@@ -75,12 +78,14 @@ Follow these steps to set up your development environment:
     ```bash
     # Create the virtual environment
     python -m venv venv
-
-    # Activate on Windows (Use Git Bash)
-    source venv/Scripts/activate
-
+    ```
+    ```bash
     # Activate on macOS/Linux
     source venv/bin/activate
+    ```
+    ```bash
+    # Activate on Windows (Git Bash)
+    source venv/Scripts/activate
     ```
 
 3.  **Install dependencies**:
