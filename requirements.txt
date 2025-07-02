@@ -32,6 +32,7 @@ shioaji==1.2.6
 typer==0.16.0
 typing-inspection==0.4.1
 typing_extensions==4.14.0
+tzdata==2025.2
 urllib3==2.5.0
 xxhash==3.5.0
 zipp==3.23.0
