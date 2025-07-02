@@ -1,6 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange)
-![SHIOAJI](https://img.shields.io/badge/SHIOAJI-required-orange)
+![Shioaji](https://img.shields.io/badge/SHIOAJI-required-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 
@@ -42,11 +42,12 @@ A production-ready service that streams real-time tick data from the Taiwan Futu
 
 This project acts as a "bridge" in the system, with the following data flow:
 
+```
 +----------------+      +------------------------+      +------------------------+
 |  Shioaji API   | <--> |  Shioaji Kafka Bridge  | ---> |      Apache Kafka      |
 | (Quote Source) |      |     (This Service)     |      |  (Streaming Platform)  |
 +----------------+      +------------------------+      +------------------------+
-
+```
 
 ---
 
