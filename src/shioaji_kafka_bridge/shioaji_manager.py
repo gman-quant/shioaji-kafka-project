@@ -44,7 +44,7 @@ class ShioajiManager:
 
     def _on_event(self, resp_code: int, event_code: int, info: str, event: str):
         """Internal callback for Shioaji quote events."""
-        logger.info("[Shioaji Event %d: %s] %s", event_code, event, info)
+        logger.debug("[Shioaji Event %d: %s] %s", event_code, event, info)
         if event_code == 16:  # Subscription/Unsubscription success
             if self._pending_operation == "subscribe_tick":
                 logger.info("Tick Subscription Confirmed.")
@@ -75,7 +75,7 @@ class ShioajiManager:
                     _ = self._api.Contracts.Futures.TXF.TXFR1  # Access the TXF contract
                     break
                 except (AttributeError, KeyError):
-                    logger.info("TXF contract not ready, retrying... (%d/10)", i)
+                    logger.debug("TXF contract not ready, retrying... (%d/10)", i)
                     time.sleep(1)
             else:
                 raise RuntimeError("TXF contract not available after 10 retries.")
