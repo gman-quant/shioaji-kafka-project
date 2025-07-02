@@ -33,7 +33,7 @@ This project acts as a "bridge" in the system, with the following data flow:
 
 Before you begin, ensure you have the following ready:
 
-1.  **Python**: Version 3.8 or higher is recommended.
+1.  **Python**: Version 3.9 or higher.
 2.  **Apache Kafka**: A running Kafka cluster.
 3.  **Shioaji Account**: A valid set of API Key and Secret Key for SinoPac Futures Shioaji.
 
