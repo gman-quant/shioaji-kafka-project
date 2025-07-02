@@ -1,9 +1,6 @@
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-
-![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange)
-
-![Shioaji](https://img.shields.io/badge/SHIOAJI-required-orange)
-
+![Python](https://img.shields.io/badge/python-3.9%2B-blue) 
+![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange) 
+![Shioaji](https://img.shields.io/badge/SHIOAJI-required-orange) 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 
