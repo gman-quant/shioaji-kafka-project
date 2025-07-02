@@ -1,74 +1,77 @@
 # Shioaji Kafka Bridge
 
-一個健壯、可投入生產環境的服務，用於接收台灣期貨交易所的即時報價 (Tick data)，並將其發佈到 Apache Kafka 叢集中。本專案透過 Shioaji API 獲取資料，並設計了完整的高可用性與容錯機制。
+A robust, production-ready service designed to consume real-time tick data from the Taiwan Futures Exchange (TAIFEX) and publish it to an Apache Kafka cluster. This project utilizes the Shioaji API to fetch data and is built with high availability and fault tolerance in mind.
 
 ---
 
-## 核心功能
+## Core Features
 
-* **📈 即時資料流**: 穩定接收 Shioaji API 推播的台指期貨（TXF）逐筆報價。
-* **🧩 模組化架構**: 採用現代化的專案結構，將設定、連線管理、業務邏輯等完全分離，易於維護與擴展。
-* **🔄 智慧自動重連**: 能自動偵測並處理網路中斷、API Session 失效等問題，實現服務的自我修復。
-* **🗓️ 假日/休市偵測**: 在長時間未收到報價時，能智慧地區分是「連線問題」還是「市場休市」，避免不必要的資源浪費和錯誤警報。
-* **⚡️ 高效能 Producer**: 透過批次傳送 (`batch.size`, `linger.ms`) 與訊息壓縮 (`compression.type`)，優化了 Kafka Producer 的效能，適合高流量的資料場景。
-* **📝 清晰的日誌監控**: 在服務啟動、市場狀態轉換（開盤/收盤）、發生錯誤時，都會打印出清晰、易讀的日誌，方便維運人員監控。
-* **🔑 設定檔驅動**: 所有的敏感金鑰與環境配置都透過 `.env` 檔案管理，確保程式碼的安全性與可攜性。
+* **📈 Real-time Data Stream**: Stably consumes real-time tick-by-tick quote data for Taiwan Stock Index Futures (TXF) pushed by the Shioaji API.
+* **🧩 Modular Architecture**: Adopts a modern project structure that completely separates configuration, connection management, and business logic for easy maintenance and expansion.
+* **🔄 Intelligent Auto-Reconnect**: Automatically detects and handles issues like network interruptions and API session failures, enabling service self-healing.
+* **🗓️ Holiday/Market Close Detection**: Intelligently distinguishes between connection issues and market holidays during long periods of no data, preventing unnecessary resource waste and false alarms.
+* **⚡️ High-Performance Producer**: The Kafka producer is optimized for high-traffic scenarios through message batching (`batch.size`, `linger.ms`) and compression (`compression.type`).
+* **📝 Clear Log Monitoring**: Provides clear, human-readable logs for service startup, market state transitions (open/close), and error events, facilitating easy monitoring by operators.
+* **🔑 Configuration-Driven**: All sensitive keys and environmental configurations are managed via a `.env` file, ensuring code security and portability.
 
-## 系統架構
+---
 
-本專案在系統中扮演「橋樑」的角色，其資料流如下：
+## System Architecture
+
+This project acts as a "bridge" in the system, with the following data flow:
 
 ```
-+--------------+      +-------------------------+      +-------------------------+
-| Shioaji API  | <--> |  Shioaji Kafka Bridge   | ---> |   Apache Kafka Server   |
-|   (Quote)    |      |        (Service)        |      |  (Streamming Platform)  |
-+--------------+      +-------------------------+      +-------------------------+
++----------------+      +------------------------+      +------------------------+
+|  Shioaji API   | <--> |  Shioaji Kafka Bridge  | ---> |      Apache Kafka      |
+| (Quote Source) |      |     (This Service)     |      |  (Streaming Platform)  |
++----------------+      +------------------------+      +------------------------+
 ```
 
-## 事前準備
+---
 
-在開始之前，請確保您已準備好以下環境：
+## Prerequisites
 
-1.  **Python**: 建議版本 3.8 或以上。
-2.  **Apache Kafka**: 一個正在運行的 Kafka 叢集。
-3.  **Shioaji 帳戶**: 一組有效的永豐期貨 Shioaji API Key 及 Secret Key。
+Before you begin, ensure you have the following ready:
 
-## 安裝與設定
+1.  **Python**: Version 3.8 or higher is recommended.
+2.  **Apache Kafka**: A running Kafka cluster.
+3.  **Shioaji Account**: A valid set of API Key and Secret Key for SinoPac Futures Shioaji.
 
-請依照以下步驟來設定您的開發環境：
+---
 
-1.  **複製專案倉庫**:
+## Installation and Setup
+
+Follow these steps to set up your development environment:
+
+1.  **Clone the repository**:
     ```bash
-    git clone <your-repository-url>
+    git clone [https://github.com/gman-quant/shioaji-kafka-project.git](https://github.com/gman-quant/shioaji-kafka-project.git)
     cd shioaji-kafka-project
     ```
 
-2.  **建立並啟用 Python 虛擬環境**:
+2.  **Create and activate a Python virtual environment**:
     ```bash
-    # 建立虛擬環境
+    # Create the virtual environment
     python -m venv venv
 
-    # 在 Windows 上啟用
-    .\venv\Scripts\activate
-
-    # 在 macOS/Linux 上啟用
+    # Activate on macOS/Linux
     source venv/bin/activate
     ```
 
-3.  **安裝專案依賴**:
+3.  **Install dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **設定環境變數**:
-    專案根目錄中包含一個 `.gitignore` 檔案，它會忽略 `.env` 檔案以保護您的金鑰。請手動建立此檔案：
+4.  **Set up environment variables**:
+    The root directory includes a `.gitignore` file that ignores `.env` to protect your keys. Please create this file manually:
 
     ```bash
-    # 建立 .env 檔案
+    # Create the .env file
     touch .env
     ```
 
-    然後將以下內容填入 `.env` 檔案，並換成您自己的設定：
+    Then, add the following content to your `.env` file and replace the placeholders with your own settings:
 
     ```ini
     # .env
@@ -78,29 +81,35 @@
     SHIOAJI_SECRET_KEY="YOUR_SECRET_KEY"
 
     # --- Kafka Configuration ---
-    KAFKA_BROKER="your_kafka_broker_ip:9092"
+    KAFKA_BROKER="your_kafka_broker_address:9092"
     KAFKA_TOPIC="your_target_topic_name"
     ```
 
-## 執行服務
+---
 
-完成設定後，您可以透過以下指令啟動服務：
+## Running the Service
+
+Once the setup is complete, you can start the service with the following command:
 
 ```bash
 python src/main.py
 ```
 
-服務啟動後，您會在終端機中看到詳細的日誌輸出，包括初始的市場狀態、連線狀況等。要停止服務，請按 `Ctrl+C`，程式會執行優雅的關閉程序。
+After the service starts, you will see detailed log output in your terminal, including the initial market status and connection details. To stop the service, press `Ctrl+C` for a graceful shutdown.
 
-## 組態設定
+---
 
-除了 `.env` 中的設定，一些行為參數可以在 `src/shioaji_kafka_bridge/config.py` 中進行調整：
+## Configuration
 
-* `MONITOR_INTERVAL`: 健康檢查的間隔秒數（預設 30 秒）。
-* `TIMEOUT_SECONDS`: 判斷為 Tick 中斷的秒數（預設 360 秒）。
-* `MAX_TIMEOUT_RETRIES`: 在觸發假日偵測前的重試次數（預設 3 次）。
-* `TRADING_BUFFER_MIN`: 在開盤/收盤時間前後的緩衝分鐘數（預設 1 分鐘）。
+In addition to the settings in `.env`, some behavioral parameters can be adjusted in `src/shioaji_kafka_bridge/config.py`:
 
-## 授權 (License)
+* `MONITOR_INTERVAL`   : The interval in seconds for health checks (default: 30 seconds).
+* `TIMEOUT_SECONDS`    : The duration in seconds to wait before considering a tick stream disconnected (default: 360 seconds).
+* `MAX_TIMEOUT_RETRIES`: The number of retries before triggering holiday detection (default: 3).
+* `TRADING_BUFFER_MIN` : A buffer in minutes around the market open/close times (default: 1 minute).
 
-本專案採用 MIT 授權。詳情請見 `LICENSE` 檔案。
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
