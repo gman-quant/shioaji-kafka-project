@@ -1,6 +1,7 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Kafka](https://img.shields.io/badge/kafka-enabled-orange)
+![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange)
+![SHIOAJI](https://img.shields.io/badge/SHIOAJI-required-brightgreen)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 
 # Shioaji Kafka Bridge
@@ -41,16 +42,14 @@ A production-ready service that streams real-time tick data from the Taiwan Futu
 
 This project acts as a "bridge" in the system, with the following data flow:
 
-```
-<details> <summary>點我看 mermaid 版本</summary>
-mermaid
-Copy
-Edit
+<details>
+<summary>點我看 mermaid 版本</summary>
+
+```mermaid
 graph LR
   A[Shioaji API<br>(tick stream)] <--> B[Shioaji Kafka Bridge<br>(This service)]
   B --> C[Apache Kafka<br>(Streaming Platform)]
-</details>
-```
+</details> ```
 
 ---
 
