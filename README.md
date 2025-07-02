@@ -1,18 +1,39 @@
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Kafka](https://img.shields.io/badge/kafka-enabled-orange)
+
+
 # Shioaji Kafka Bridge
 
-A robust, production-ready service designed to consume real-time tick data from the Taiwan Futures Exchange (TAIFEX) and publish it to an Apache Kafka cluster. This project utilizes the Shioaji API to fetch data and is built with high availability and fault tolerance in mind.
+A production-ready service that streams real-time tick data from the Taiwan Futures Exchange (TAIFEX) via the Shioaji API and publishes it to Apache Kafka. Designed with high availability and modularity in mind.
+
+> This project is ideal for trading systems or data pipelines that require high-frequency futures data ingestion from TAIFEX via Shioaji and distributed processing via Kafka.
+
 
 ---
 
-## Core Features
+## Features
 
-* **📈 Real-time Data Stream**: Stably consumes real-time tick-by-tick quote data for Taiwan Stock Index Futures (TXF) pushed by the Shioaji API.
-* **🧩 Modular Architecture**: Adopts a modern project structure that completely separates configuration, connection management, and business logic for easy maintenance and expansion.
-* **🔄 Intelligent Auto-Reconnect**: Automatically detects and handles issues like network interruptions and API session failures, enabling service self-healing.
-* **🗓️ Holiday/Market Close Detection**: Intelligently distinguishes between connection issues and market holidays during long periods of no data, preventing unnecessary resource waste and false alarms.
-* **⚡️ High-Performance Producer**: The Kafka producer is optimized for high-traffic scenarios through message batching (`batch.size`, `linger.ms`) and compression (`compression.type`).
-* **📝 Clear Log Monitoring**: Provides clear, human-readable logs for service startup, market state transitions (open/close), and error events, facilitating easy monitoring by operators.
-* **🔑 Configuration-Driven**: All sensitive keys and environmental configurations are managed via a `.env` file, ensuring code security and portability.
+- **📈 Real-time Tick Streaming**  
+  Streams high-frequency TXF tick data from the Shioaji API to Kafka with minimal latency.
+
+- **🧩 Modular Design**  
+  Separates config, connection, and logic for easy maintenance and scalability.
+
+- **🔄 Auto-Reconnect**  
+  Automatically recovers from network or session failures for uninterrupted operation.
+
+- **🗓️ Market Holiday Detection**  
+  Distinguishes between genuine disconnections and market closure to avoid false alerts.
+
+- **⚡️ Kafka Optimization**  
+  Uses batching (`batch.size`, `linger.ms`) and compression (`compression.type`) for performance.
+
+- **📝 Transparent Logging**  
+  Emits structured, human-readable logs covering market transitions and errors.
+
+- **🔑 `.env`-Driven Configuration**  
+  Securely manages credentials and settings through environment variables.
 
 ---
 
@@ -21,10 +42,14 @@ A robust, production-ready service designed to consume real-time tick data from 
 This project acts as a "bridge" in the system, with the following data flow:
 
 ```
-+----------------+      +------------------------+      +------------------------+
-|  Shioaji API   | <--> |  Shioaji Kafka Bridge  | ---> |      Apache Kafka      |
-| (Quote Source) |      |     (This Service)     |      |  (Streaming Platform)  |
-+----------------+      +------------------------+      +------------------------+
+<details> <summary>點我看 mermaid 版本</summary>
+mermaid
+Copy
+Edit
+graph LR
+  A[Shioaji API<br>(tick stream)] <--> B[Shioaji Kafka Bridge<br>(This service)]
+  B --> C[Apache Kafka<br>(Streaming Platform)]
+</details>
 ```
 
 ---
