@@ -42,7 +42,7 @@ Production-ready service streaming real-time Taiwan Futures Exchange (TAIFEX) ti
 
 This project acts as a "bridge" in the system, with the following data flow:
 
-```bash
+```
 +----------------+      +------------------------+      +------------------------+
 |  Shioaji API   | <--> |  Shioaji Kafka Bridge  | ---> |      Apache Kafka      |
 | (Quote Source) |      |     (This Service)     |      |  (Streaming Platform)  |
