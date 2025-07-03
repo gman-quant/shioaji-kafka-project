@@ -67,7 +67,7 @@ class ShioajiManager:
         logger.info("Attempting to login and subscribe to TXF ticks...")
         try:
             logger.info("Logging in to Shioaji...")
-            self._api.login(api_key=config.API_KEY, secret_key=config.SECRET_KEY)
+            self._api.login(api_key=config.SHIOAJI_API_KEY, secret_key=config.SHIOAJI_SECRET_KEY)
             
             # Retry mechanism for contract fetching
             for i in range(1, 11):

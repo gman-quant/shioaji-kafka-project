@@ -18,7 +18,7 @@ def main():
     logger = logging.getLogger(__name__)
 
     # 2. Check for essential configurations
-    if not config.API_KEY or not config.SECRET_KEY:
+    if not config.SHIOAJI_API_KEY or not config.SHIOAJI_SECRET_KEY:
         logger.critical("Missing SHIOAJI_API_KEY or SHIOAJI_SECRET_KEY. Please set them in .env file.")
         sys.exit(1)
 

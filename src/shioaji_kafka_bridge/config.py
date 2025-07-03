@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ==================== Shioaji API Credentials ====================
-API_KEY = os.environ.get("SHIOAJI_API_KEY")
-SECRET_KEY = os.environ.get("SHIOAJI_SECRET_KEY")
+SHIOAJI_API_KEY = os.environ.get("SHIOAJI_API_KEY")
+SHIOAJI_SECRET_KEY = os.environ.get("SHIOAJI_SECRET_KEY")
 
 # ==================== Kafka Config ====================
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER")
