@@ -97,6 +97,7 @@ Follow these steps to set up your development environment:
     ```bash
     # Create the .env file
     touch .env
+    nano .env
     ```
 
     Then, add the following content to your `.env` file and replace the placeholders with your own settings:
