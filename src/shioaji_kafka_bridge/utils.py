@@ -5,16 +5,25 @@ import socket
 from datetime import datetime, timedelta
 from . import config
 
+# Defines the fields within a Tick object that should be converted to float.
+FIELDS_TO_FLOAT = (
+    'open', 'underlying_price', 'avg_price', 'close', 'high',
+    'low', 'amount', 'total_amount', 'price_chg', 'pct_chg'
+)
+
 def setup_logging():
     """Configures the root logger for the application."""
     log_format = '[%(asctime)s] [%(threadName)-20s] [%(levelname)-8s] %(message)s (%(filename)s:%(lineno)d)'
     logging.basicConfig(level=logging.INFO, format=log_format, datefmt='%Y-%m-%d %H:%M:%S')
 
 def tick_to_dict(tick) -> dict:
-    """Converts a Shioaji Tick object to a dictionary with float conversions."""
+    """
+    Converts a Shioaji Tick object to a dictionary, safely handling
+    type conversions and ensuring timezone information is present.
+    """
     tick_dict = tick.to_dict()
     tick_dict['datetime'] = tick_dict['datetime'].replace(tzinfo=config.TW_TZ) # Optionally set timezone if needed
-    for field in config.FIELDS_TO_FLOAT:
+    for field in FIELDS_TO_FLOAT:
         tick_dict[field] = float(tick_dict[field])
     return tick_dict
 

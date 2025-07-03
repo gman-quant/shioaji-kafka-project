@@ -33,7 +33,7 @@ class BridgeService:
 
     def _on_subscription_success(self):
         """Callback function for when ShioajiManager confirms a subscription."""
-        logger.info("Subscription success event received by service, resetting tick timer.")
+        logger.debug("Subscription success event received by service, resetting tick timer.")
         self.last_tick_time = time.time()
 
     def run(self):
@@ -50,13 +50,20 @@ class BridgeService:
         self._monitor_loop()
 
     def _monitor_loop(self):
-        """The main loop for monitoring connection health and trading times."""
+        """
+        The main loop for monitoring connection health and trading times.
+        This loop is the heart of the service's resilience.
+        """
         logger.info("Monitoring loop started.")
-        timeout_retries = 0
-        # --- Add a state variable for the warning if no tick ---
-        tick_flow_warning_active = False
         
-        # Get initial market status 
+        # --- State variables for monitoring ---
+        timeout_retries = 0
+        # Tracks the escalation level of slow tick warnings.
+        slow_tick_warning_level = 0
+        # The initial threshold for the first warning (e.g., 60 seconds)
+        initial_warning_threshold = 60
+        
+        # Get initial market status to prevent logging a transition on startup
         try:
             dt_now = datetime.now(config.TW_TZ)
             was_trading = utils.is_trading_time(dt_now, self.day_off_date)
@@ -68,76 +75,79 @@ class BridgeService:
             dt_now = datetime.now(config.TW_TZ)
             is_currently_trading = utils.is_trading_time(dt_now, self.day_off_date)
 
-            # Market status change detection
+            # --- Block 1: Handle Market Status Transitions (Logging only) ---
             if is_currently_trading != was_trading:
                 status_msg = "[ Market Status: OPEN ]" if is_currently_trading else "[ Market Status: CLOSED ]"
                 logger.info("=" * 60)
-                logger.info(status_msg)
+                logger.info(f"Market status transition detected: {status_msg}")
                 logger.info("=" * 60)
-                
                 was_trading = is_currently_trading
-                self.last_tick_time = time.time() 
-                timeout_retries = 0
-                tick_flow_warning_active = False # Reset warning on status change
 
+            # --- Block 2: Handle Non-Trading Hours ---
+            # This is the authoritative block for the non-trading state.
             if not is_currently_trading:
                 if self._shioaji_manager.subscribed:
-                    logger.info("Unsubscribing from ticks.")
+                    logger.info("Market is closed. Unsubscribing from ticks.")
                     self._shioaji_manager.unsubscribe_ticks()
+                
+                # Crucial: Reset all session-specific counters to ensure a clean start.
                 timeout_retries = 0
+                slow_tick_warning_level = 0
                 continue
             
-            # --- We are in trading hours from here ---
+            # --- From here, we are confirmed to be IN TRADING HOURS ---
 
+            # --- Block 3: Ensure Subscription ---
             if not self._shioaji_manager.subscribed:
-                logger.warning("Not subscribed during trading hours.")
+                logger.warning("Not subscribed during trading hours. Attempting to connect...")
                 try:
                     self._shioaji_manager.connect_and_subscribe()
                 except APILoginFetchError as e:
                     logger.error("Failed to connect during monitor cycle. Will retry. Reason: %s", e)
                 continue
 
-            # --- Tick Health Check ---
+            # --- Block 4: Tick Health Check ---
             no_tick_duration = time.time() - self.last_tick_time
 
-            # 1. Major Timeout: Handles reconnection or holiday detection
+            # 4a. Major Timeout: A critical failure state.
             if no_tick_duration > config.TIMEOUT_SECONDS:
-                tick_flow_warning_active = False # Reset warning flag
-                
+                slow_tick_warning_level = 0
                 timeout_retries += 1
                 logger.warning(
-                    "Tick timeout: No new tick for %.0f seconds. (count %d/%d).",
+                    "[Critical timeout]: No new tick for %.0f seconds. Investigating... (Attempt %d/%d)",
                     no_tick_duration, timeout_retries, config.MAX_TIMEOUT_RETRIES
                 )
                 
                 if timeout_retries >= config.MAX_TIMEOUT_RETRIES:
                     if not kafka_handler.has_opening_kafka_ticks_optimized():
-                        logger.warning("No ticks in Kafka either. Assuming it's a non-trading day.")
+                        logger.warning("Holiday detected: No recent ticks found in Kafka. Entering sleep mode.")
                         self.day_off_date = dt_now.date()
                         self._shioaji_manager.unsubscribe_ticks()
                         timeout_retries = 0
                         continue
                     else:
-                        logger.info("Kafka has recent ticks. This is likely a connection issue, not a holiday.")
+                        logger.info("Kafka has recent ticks. This is a connection issue, not a holiday.")
                 
-                logger.error("Assuming connection issue. Forcing reconnection.")
+                logger.error("Connection issue suspected. Forcing reconnection.")
                 self._shioaji_manager.reconnect(reason="Tick Timeout")
 
-            # 2. Minor Timeout Warning: Log a warning if tick flow is slow
-            elif no_tick_duration > 2 * config.MONITOR_INTERVAL:
-                logger.warning("No new tick for %.0f seconds.", no_tick_duration)
-                tick_flow_warning_active = True # Set state to "warning"
+            # 4b. Escalating Minor Timeout Warning.
+            # The threshold increases with each warning level (e.g., >60s, >120s, >180s).
+            elif no_tick_duration > initial_warning_threshold * (slow_tick_warning_level + 1):
+                logger.warning("[Slow tick flow]: No new tick for %.0f seconds.", no_tick_duration)
+                slow_tick_warning_level += 1
 
-            # 3. Recovery Message: Log a recovery message only if it was previously in a warning state
-            else:
-                if tick_flow_warning_active:
-                    logger.info("Tick data flow has recovered.")
-                    tick_flow_warning_active = False # Reset state to "normal"
+            # 4c. Recovery Condition.
+            # This is now an ELIF, not an ELSE. It only triggers if the duration is *actually* back in the safe zone.
+            elif no_tick_duration < initial_warning_threshold:
+                if slow_tick_warning_level > 0:
+                    logger.info("[Slow tick flow]: Recovered.")
+                    slow_tick_warning_level = 0
 
 
     def stop(self):
         """Gracefully shuts down the service."""
-        logger.info("Shutdown signal received. Cleaning up...")
+        logger.info("Preparing to shut down Bridge service...")
         
         if self._shioaji_manager:
             self._shioaji_manager.unsubscribe_ticks()
