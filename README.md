@@ -69,6 +69,7 @@ Follow these steps to set up your development environment:
 1.  **Clone the repository**:
     ```bash
     git clone https://github.com/gman-quant/shioaji-kafka-project.git
+    cd shioaji-kafka-project
     ```
 
 2.  **Create and activate a Python virtual environment**:
