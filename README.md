@@ -132,10 +132,10 @@ After the service starts, you will see detailed log output in your terminal, inc
 
 In addition to the settings in `.env`, some behavioral parameters can be adjusted in `src/shioaji_kafka_bridge/config.py`:
 
-* `MONITOR_INTERVAL`   : The interval in seconds for health checks (default: 30 seconds).
-* `TIMEOUT_SECONDS`    : The duration in seconds to wait before considering a tick stream disconnected (default: 360 seconds).
-* `MAX_TIMEOUT_RETRIES`: The number of retries before triggering holiday detection (default: 3).
-* `TRADING_BUFFER_MIN` : A buffer in minutes around the market open/close times (default: 1 minute).
+* `MONITOR_INTERVAL`   : Service monitoring loop interval (default: 10 seconds)
+* `TIMEOUT_SECONDS`    : Max tick silence before critical timeout (default: 360 seconds)
+* `MAX_TIMEOUT_RETRIES`: Retries after critical timeout before holiday check (default: 3)
+* `TRADING_BUFFER_MIN` : A buffer in minutes around the market open/close times (default: 1 minute)
 
 ---
 

@@ -17,11 +17,11 @@ KAFKA_BROKER = os.environ.get("KAFKA_BROKER")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC")
 
 # ==================== Monitor Settings ====================
-# Service monitoring loop interval (seconds).
+# Service monitoring loop interval (seconds)
 MONITOR_INTERVAL = 10
-# Max tick silence before critical timeout (seconds).
+# Max tick silence before critical timeout (seconds)
 TIMEOUT_SECONDS = 360
-# Retries after critical timeout before holiday check.
+# Retries after critical timeout before holiday check
 MAX_TIMEOUT_RETRIES = 3
 
 # ==================== Trading Hours (Asia/Taipei) ====================
