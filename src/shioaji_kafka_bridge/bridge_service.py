@@ -77,7 +77,7 @@ class BridgeService:
             if is_currently_trading != was_trading:
                 status_msg = "[ Market Status: OPEN ]" if is_currently_trading else "[ Market Status: CLOSED ]"
                 logger.info("=" * 60)
-                logger.info(f"Market status transition detected: {status_msg}")
+                logger.info(f"{status_msg}")
                 logger.info("=" * 60)
                 was_trading = is_currently_trading
 
