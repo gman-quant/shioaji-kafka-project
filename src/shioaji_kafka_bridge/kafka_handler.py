@@ -51,7 +51,7 @@ def has_opening_kafka_ticks() -> bool:
     """
     dt_now = datetime.now(tz=config.TW_TZ)
     
-    # --- Session start time logic (這部分不變，原本就寫得很好) ---
+    # --- Session start time logic ---
     is_day_session = config.DAY_SESSION_START <= dt_now.time() < config.NIGHT_SESSION_START
     if is_day_session:
         start_time, start_date = config.DAY_SESSION_START, dt_now.date()

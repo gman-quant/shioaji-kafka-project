@@ -118,7 +118,7 @@ class BridgeService:
                 )
                 
                 if timeout_retries >= config.MAX_TIMEOUT_RETRIES:
-                    if not kafka_handler.has_opening_kafka_ticks_optimized():
+                    if not kafka_handler.has_opening_kafka_ticks():
                         logger.warning("Holiday detected: No recent ticks found in Kafka. Entering sleep mode.")
                         self.day_off_date = dt_now.date()
                         self._shioaji_manager.unsubscribe_ticks()
