@@ -1,10 +1,9 @@
+# Shioaji Kafka Bridge
+
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue) 
 ![Apache Kafka](https://img.shields.io/badge/Kafka-required-orange) 
 ![Shioaji](https://img.shields.io/badge/Shioaji-required-orange) 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
-
-
-# Shioaji Kafka Bridge
 
 Production-ready service streaming real-time Taiwan Futures Exchange (TAIFEX) tick data via Shioaji API to Apache Kafka, built for high availability and modularity.
 
