@@ -60,8 +60,6 @@ class BridgeService:
         timeout_retries = 0
         # Tracks the escalation level of slow tick warnings.
         slow_tick_warning_level = 0
-        # The initial threshold for the first warning (e.g., 60 seconds)
-        initial_warning_threshold = 60
         
         # Get initial market status to prevent logging a transition on startup
         try:
@@ -107,6 +105,7 @@ class BridgeService:
                 continue
 
             # --- Block 4: Tick Health Check ---
+            current_warning_threshold = utils.get_current_warning_threshold(dt_now)
             no_tick_duration = time.time() - self.last_tick_time
 
             # 4a. Major Timeout: A critical failure state.
@@ -133,13 +132,13 @@ class BridgeService:
 
             # 4b. Escalating Minor Timeout Warning.
             # The threshold increases with each warning level (e.g., >60s, >120s, >180s).
-            elif no_tick_duration > initial_warning_threshold * (slow_tick_warning_level + 1):
+            elif no_tick_duration > current_warning_threshold + (config.SLOW_TICK_WARNING_INCREMENT * slow_tick_warning_level):
                 logger.warning("[Slow tick flow]: No new tick for %.0f seconds.", no_tick_duration)
                 slow_tick_warning_level += 1
 
             # 4c. Recovery Condition.
             # This is now an ELIF, not an ELSE. It only triggers if the duration is *actually* back in the safe zone.
-            elif no_tick_duration < initial_warning_threshold:
+            elif no_tick_duration < current_warning_threshold:
                 if slow_tick_warning_level > 0:
                     logger.info("[Slow tick flow]: Recovered.")
                     slow_tick_warning_level = 0

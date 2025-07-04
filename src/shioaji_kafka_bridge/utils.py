@@ -79,3 +79,20 @@ def is_trading_time(dt_now: datetime = None, day_off_date: datetime.date = None)
     )
 
     return is_in_day_session or is_in_night_session
+
+def get_current_warning_threshold(dt_now: datetime) -> int:
+    """
+    Determines the appropriate slow tick warning threshold based on the current time.
+    
+    Args:
+        dt_now: The current timezone-aware datetime.
+
+    Returns:
+        The warning threshold in seconds for the current session.
+    """
+    now_time = dt_now.time()
+    # Day session is defined as the time between the day session start and before the night session start.
+    if config.DAY_SESSION_START <= now_time < config.NIGHT_SESSION_START:
+        return config.DAY_SESSION_SLOW_TICK_THRESHOLD
+    else:
+        return config.NIGHT_SESSION_SLOW_TICK_THRESHOLD

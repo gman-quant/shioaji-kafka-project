@@ -101,7 +101,7 @@ Follow these steps to set up your development environment:
 
     Then, add the following content to your `.env` file and replace the placeholders with your own settings:
 
-    ```ini
+    ```python
     # .env
 
     # --- Shioaji API Credentials ---
@@ -131,10 +131,30 @@ After the service starts, you will see detailed log output in your terminal, inc
 
 In addition to the settings in `.env`, some behavioral parameters can be adjusted in `src/shioaji_kafka_bridge/config.py`:
 
-* `MONITOR_INTERVAL`   : Service monitoring loop interval (default: 10 seconds)
-* `TIMEOUT_SECONDS`    : Max tick silence before critical timeout (default: 360 seconds)
-* `MAX_TIMEOUT_RETRIES`: Retries after critical timeout before holiday check (default: 3)
-* `TRADING_BUFFER_MIN` : A buffer in minutes around the market open/close times (default: 1 minute)
+```python
+.
+.
+.
+# ==================== Monitor Settings ====================
+# Service monitoring loop interval (seconds)
+MONITOR_INTERVAL = 10
+# Max tick silence before critical timeout (seconds)
+TIMEOUT_SECONDS = 360
+# Retries after critical timeout before holiday check
+MAX_TIMEOUT_RETRIES = 3
+
+# Defines different slow tick warning thresholds (in seconds) for day and night sessions.
+DAY_SESSION_SLOW_TICK_THRESHOLD = 60
+NIGHT_SESSION_SLOW_TICK_THRESHOLD = 180
+# The increment for escalating slow tick warnings (in seconds).
+SLOW_TICK_WARNING_INCREMENT = 60
+
+# ==================== Trading Hours (Asia/Taipei) ====================
+TRADING_BUFFER_MIN  = 1  # Minutes to buffer around session open/close
+.
+.
+.
+```
 
 ---
 
