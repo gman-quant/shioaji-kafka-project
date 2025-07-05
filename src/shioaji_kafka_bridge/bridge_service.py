@@ -3,6 +3,7 @@
 import logging
 import time
 import threading
+import orjson
 from datetime import datetime
 
 from . import config, utils, kafka_handler
@@ -27,9 +28,18 @@ class BridgeService:
         )
     
     def _handle_new_tick(self, tick):
-        """Callback function passed to ShioajiManager."""
-        kafka_handler.send_tick_to_kafka(self._producer, tick)
-        self.last_tick_time = time.time()
+        """Got tick from Shioaji API, send to Kafka."""
+        try:
+            msg_bytes = orjson.dumps(utils.tick_to_dict(tick))
+            self._producer.produce(config.KAFKA_TOPIC, value=msg_bytes)
+            self.last_tick_time = time.time()
+        except Exception as e:
+            logger.error(f"Error producing tick to Kafka: {e}")
+
+    # # Send a test message to check connection with KAFKA
+    # def _send_test(self):
+    #     self._producer.produce(config.KAFKA_TOPIC, value=str(datetime.now()))
+    #     self.last_tick_time = time.time()
 
     def _on_subscription_success(self):
         """Callback function for when ShioajiManager confirms a subscription."""
@@ -70,6 +80,9 @@ class BridgeService:
             was_trading = False 
 
         while not self._stop_event.wait(config.MONITOR_INTERVAL):
+            # self._send_test() # check connection with KAFKA
+            self._producer.poll(0)
+
             dt_now = datetime.now(config.TW_TZ)
             is_currently_trading = utils.is_trading_time(dt_now, self.day_off_date)
 

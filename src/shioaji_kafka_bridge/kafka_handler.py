@@ -2,47 +2,42 @@
 
 import logging
 import time
-import orjson
 from datetime import datetime, timedelta, timezone
 
 from confluent_kafka import Producer, Consumer, TopicPartition
-from . import config, utils
+from . import config
 from .exceptions import KafkaProducerError
 
 logger = logging.getLogger(__name__)
 
-high_throughput_config = {
-    'bootstrap.servers': config.KAFKA_BROKER,
-    # --- Optimization parameters ---
-    # Increase batching wait time and size to allow the producer to bundle more messages.
-    'linger.ms': 20,          # Wait up to 20ms to form a batch.
-    'batch.size': 32768,      # Send batch immediately if it reaches 32KB.
-    # Enable compression to significantly reduce network traffic.
-    'compression.type': 'snappy', # Or 'zstd'.
-    # --- Resource & Reliability parameters ---
-    # Provide a larger buffer to handle traffic spikes.
-    'queue.buffering.max.kbytes': 65536,  # 64MB.
-    # Maintain default reliability level.
-    'acks': 1
-}
+def get_producer_config() -> dict:
+    """
+    Returns the configuration dictionary for the Kafka Producer.
+    This is a placeholder function to allow for future configuration changes.
+    """
+    return {
+        'bootstrap.servers': config.KAFKA_BROKER,
+        # --- Optimization parameters ---
+        # Increase batching wait time and size to allow the producer to bundle more messages.
+        'linger.ms': 20,          # Wait up to 20ms to form a batch.
+        'batch.size': 32768,      # Send batch immediately if it reaches 32KB.
+        # Enable compression to significantly reduce network traffic.
+        'compression.type': 'snappy', # Or 'zstd'.
+        # --- Resource & Reliability parameters ---
+        # Provide a larger buffer to handle traffic spikes.
+        'queue.buffering.max.kbytes': 65536,  # 64MB.
+        # Maintain default reliability level.
+        'acks': 1
+    }
 
 def create_producer() -> Producer:
     """Initializes and returns a Kafka Producer."""
     try:
-        producer = Producer(high_throughput_config)
+        producer = Producer(get_producer_config())
         logger.info("Kafka Producer initialized. Broker: %s", config.KAFKA_BROKER)
         return producer
     except Exception as e:
         raise KafkaProducerError(f"Kafka Producer initialization failed: {e}") from e
-
-def send_tick_to_kafka(producer: Producer, tick):
-    """Serializes a tick and sends it to the configured Kafka topic."""
-    try:
-        msg_bytes = orjson.dumps(utils.tick_to_dict(tick))
-        producer.produce(config.KAFKA_TOPIC, value=msg_bytes)
-        producer.poll(0)
-    except Exception as e:
-        logger.error("Kafka send failed: %s", e)
         
 def has_opening_kafka_ticks() -> bool:
     """
