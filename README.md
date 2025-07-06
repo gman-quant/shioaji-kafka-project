@@ -139,18 +139,12 @@ In addition to the settings in `.env`, some behavioral parameters can be adjuste
 # Service monitoring loop interval (seconds)
 MONITOR_INTERVAL = 10
 # Max tick silence before critical timeout (seconds)
-TIMEOUT_SECONDS = 360
+TIMEOUT_SECONDS = 300
 # Retries after critical timeout before holiday check
 MAX_TIMEOUT_RETRIES = 3
-
 # Defines different slow tick warning thresholds (in seconds) for day and night sessions.
 DAY_SESSION_SLOW_TICK_THRESHOLD = 60
 NIGHT_SESSION_SLOW_TICK_THRESHOLD = 180
-# The increment for escalating slow tick warnings (in seconds).
-SLOW_TICK_WARNING_INCREMENT = 60
-
-# ==================== Trading Hours (Asia/Taipei) ====================
-TRADING_BUFFER_MIN  = 1  # Minutes to buffer around session open/close
 .
 .
 .
@@ -160,4 +154,4 @@ TRADING_BUFFER_MIN  = 1  # Minutes to buffer around session open/close
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the [MIT License](LICENSE).
