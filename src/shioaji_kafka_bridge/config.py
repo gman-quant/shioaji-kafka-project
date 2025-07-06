@@ -20,18 +20,14 @@ KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC")
 # Service monitoring loop interval (seconds)
 MONITOR_INTERVAL = 10
 # Max tick silence before critical timeout (seconds)
-TIMEOUT_SECONDS = 360
+TIMEOUT_SECONDS = 300
 # Retries after critical timeout before holiday check
 MAX_TIMEOUT_RETRIES = 3
-
 # Defines different slow tick warning thresholds (in seconds) for day and night sessions.
 DAY_SESSION_SLOW_TICK_THRESHOLD = 60
 NIGHT_SESSION_SLOW_TICK_THRESHOLD = 180
-# The increment for escalating slow tick warnings (in seconds).
-SLOW_TICK_WARNING_INCREMENT = 60
 
 # ==================== Trading Hours (Asia/Taipei) ====================
-TRADING_BUFFER_MIN  = 1  # Minutes to buffer around session open/close
 DAY_SESSION_START   = dt_time( 8, 30)
 DAY_SESSION_END     = dt_time(13, 45)
 NIGHT_SESSION_START = dt_time(14, 50)

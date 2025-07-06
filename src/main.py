@@ -17,12 +17,12 @@ def main():
     utils.setup_logging()
     logger = logging.getLogger(__name__)
 
-    # 2. Check for essential configurations
+    # 2a. Check for essential configurations
     if not config.SHIOAJI_API_KEY or not config.SHIOAJI_SECRET_KEY:
         logger.critical("Missing SHIOAJI_API_KEY or SHIOAJI_SECRET_KEY. Please set them in .env file.")
         sys.exit(1)
 
-    # 2.5. Check Market Status
+    # 2b. Check Market Status
     try:
         is_open = utils.is_trading_time(datetime.now())
         initial_status = "[ Market Status: OPEN ]" if is_open else "[ Market Status: CLOSED ]"
