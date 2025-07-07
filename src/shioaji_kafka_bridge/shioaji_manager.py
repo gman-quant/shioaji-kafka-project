@@ -27,7 +27,7 @@ class ShioajiManager:
 
     def _create_new_api_instance(self):
         """Creates and configures a new Shioaji API instance."""
-        logger.info("Creating a new Shioaji API instance...")
+        logger.debug("Creating a new Shioaji API instance...")
         self._api = sj.Shioaji(simulation=True)
         # Register callbacks on the new instance
         self._api.on_tick_fop_v1()(self._on_tick)
@@ -64,7 +64,7 @@ class ShioajiManager:
 
     def connect_and_subscribe(self):
         """Logs into Shioaji, verifies contract, and subscribes to ticks."""
-        logger.info("Attempting to login and subscribe to TXF ticks...")
+        logger.debug("Attempting to login and subscribe to TXF ticks...")
         try:
             logger.info("Logging in to Shioaji...")
             self._api.login(api_key=config.SHIOAJI_API_KEY, secret_key=config.SHIOAJI_SECRET_KEY)
@@ -88,7 +88,7 @@ class ShioajiManager:
                 logger.info("Already subscribed, no action needed.")
         
         except Exception as e:
-            logger.error("Failed during login or subscription process: %s", e)
+            logger.debug("Failed during login or subscription process: %s", e)
             raise APILoginFetchError(f"Login or subscription failed: {e}") from e
 
     def subscribe_ticks(self):
@@ -121,13 +121,13 @@ class ShioajiManager:
     def reconnect(self, reason: str):
         """Handles the full session reconnection logic."""
         if not self._reconnection_lock.acquire(blocking=False):
-            logger.warning("Reconnection is already in progress. Skipping.")
+            logger.error("Reconnection is already in progress. Skipping.")
             return
 
         try:
-            logger.warning("=" * 60)
-            logger.warning("Starting session reconnection process due to: %s", reason)
-            logger.warning("=" * 60)
+            logger.info("=" * 60)
+            logger.info("Starting session reconnection process due to: %s", reason)
+            logger.info("=" * 60)
             
             # Reset state
             self._subscribed = False
@@ -137,9 +137,9 @@ class ShioajiManager:
             if self._api:
                 try:
                     self._api.logout()
-                    logger.info("Old API object logged out.")
+                    logger.debug("Old API object logged out.")
                 except Exception as e:
-                    logger.warning("Exception during old API logout (this is often ok): %s", e)
+                    logger.debug("Exception during old API logout (this is often ok): %s", e)
             
             # Create a fresh instance
             self._create_new_api_instance()
@@ -148,12 +148,12 @@ class ShioajiManager:
             self.connect_and_subscribe()
 
         except APILoginFetchError as e:
-            logger.error("Session recovery failed during login/subscribe. Monitor will retry. Error: %s", e)
+            logger.debug("Session recovery failed during login/subscribe. Monitor will retry. Error: %s", e)
         except Exception as e:
             logger.exception("An unexpected error occurred during reconnect.")
         finally:
             self._reconnection_lock.release()
-            logger.info("Reconnection process finished.")
+            logger.debug("Reconnection process finished.")
 
     def logout(self):
         """Logs out from the Shioaji API."""

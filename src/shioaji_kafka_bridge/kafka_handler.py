@@ -19,15 +19,15 @@ def get_producer_config() -> dict:
         'bootstrap.servers': config.KAFKA_BROKER,
         # --- Optimization parameters ---
         # Increase batching wait time and size to allow the producer to bundle more messages.
-        'linger.ms': 20,          # Wait up to 20ms to form a batch.
-        'batch.size': 32768,      # Send batch immediately if it reaches 32KB.
+        'linger.ms': 500,          # Wait up to 500ms (0.5s) to form a batch.
+        'batch.size': 65536,      # Send batch immediately if it reaches 64KB.
         # Enable compression to significantly reduce network traffic.
-        'compression.type': 'snappy', # Or 'zstd'.
+        'compression.type': 'zstd', # Or 'snappy'.
         # --- Resource & Reliability parameters ---
         # Provide a larger buffer to handle traffic spikes.
         'queue.buffering.max.kbytes': 65536,  # 64MB.
         # Maintain default reliability level.
-        'acks': 1
+        'acks': 'all'
     }
 
 def create_producer() -> Producer:
@@ -61,7 +61,7 @@ def has_opening_kafka_ticks() -> bool:
     try:
         consumer = Consumer({
             'bootstrap.servers': config.KAFKA_BROKER,
-            'group.id': f'temp-tick-check-{time.time()}',
+            'group.id': 'temp-tick-check',
             'auto.offset.reset': 'earliest',
         })
         
@@ -70,35 +70,33 @@ def has_opening_kafka_ticks() -> bool:
             logger.warning("Topic '%s' does not exist. Assuming no recent ticks.", config.KAFKA_TOPIC)
             return False
 
-        # --- 【核心修改】使用 offsets_for_times ---
-        # 1. 建立一個 TopicPartition 列表，每個都帶有我們要查詢的時間戳
+        # 1. Create a list of TopicPartitions, each with the desired timestamp
         partitions_to_query = [
             TopicPartition(config.KAFKA_TOPIC, p, start_utc_ms) 
             for p in metadata.topics[config.KAFKA_TOPIC].partitions
         ]
         
-        # 2. 讓 Kafka 直接告訴我們每個 partition 在該時間之後的 offset
-        # 這個呼叫效率非常高，因為它是在 Broker 端完成的
+        # 2. Get offsets for each partition after the specified time from Kafka.
+        # This call is efficient as it's processed on the Broker.
         offsets = consumer.offsets_for_times(partitions_to_query, timeout=10.0)
 
-        # 3. 檢查回傳的結果
+        # 3. Check the returned results
         for p in offsets:
-            # 如果 offset 不是 -1，代表找到了在該時間點之後的訊息
+            # If offset is not -1, a message was found after the timestamp
             if p.offset != -1:
-                logger.info(
+                logger.debug(
                     "Found a message in partition %d with offset %d after session start. Assuming trading is active.",
                     p.partition, p.offset
                 )
                 return True
 
-        logger.info("No messages found in any partition after the session start time.")
+        logger.debug("No messages found in any partition after the session start time.")
         return False
         
     except Exception as e:
         logger.error("Failed to check Kafka for opening ticks due to an exception: %s", e)
-        # 【核心修改】修改錯誤處理的策略
-        # Fail safe: If we can't check Kafka, assume it's a connection issue, not a holiday.
-        # This keeps the main monitoring loop trying to reconnect.
+        # Fail-safe: Assume connection issue, not a holiday.
+        # This keeps the main monitoring loop attempting to reconnect.
         return True
     finally:
         if consumer:

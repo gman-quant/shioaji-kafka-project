@@ -36,11 +36,6 @@ class BridgeService:
         except Exception as e:
             logger.error(f"Error producing tick to Kafka: {e}")
 
-    # # Send a test message to check connection with KAFKA
-    # def _send_test(self):
-    #     self._producer.produce(config.KAFKA_TOPIC, value=str(datetime.now()))
-    #     self.last_tick_time = time.time()
-
     def _on_subscription_success(self):
         """Callback function for when ShioajiManager confirms a subscription."""
         logger.debug("Subscription success event received by service, resetting tick timer.")
@@ -110,7 +105,7 @@ class BridgeService:
 
             # --- Block 3: Ensure Subscription ---
             if not self._shioaji_manager.subscribed:
-                logger.warning("Not subscribed during trading hours. Attempting to connect...")
+                logger.debug("Not subscribed during trading hours. Attempting to connect...")
                 try:
                     self._shioaji_manager.connect_and_subscribe()
                 except APILoginFetchError as e:
@@ -125,37 +120,41 @@ class BridgeService:
             if no_tick_duration > config.TIMEOUT_SECONDS:
                 slow_tick_warning_level = 0
                 timeout_retries += 1
-                logger.warning(
-                    "[Critical timeout]: No new tick for %.0f seconds. Investigating... (Attempt %d/%d)",
-                    no_tick_duration, timeout_retries, config.MAX_TIMEOUT_RETRIES
-                )
                 
-                if timeout_retries >= config.MAX_TIMEOUT_RETRIES:
+                if timeout_retries > config.MAX_TIMEOUT_RETRIES:
+                    # Reached max attempts, now determine the root cause (holiday vs connection)
+                    logger.error("[CRITICAL]: Max retries exceeded. Cheaking Kafka ticks.")
                     if not kafka_handler.has_opening_kafka_ticks():
-                        logger.warning("Holiday detected: No recent ticks found in Kafka. Entering sleep mode.")
+                        logger.info("No recent Kafka ticks.")
+                        logger.info("Holiday suspected. Entering sleep mode.")
                         self.day_off_date = dt_now.date()
                         self._shioaji_manager.unsubscribe_ticks()
-                        timeout_retries = 0
-                        continue
+                        timeout_retries = 0 # Reset retries after handling holiday
+                        continue  # Exit current loop iteration
                     else:
-                        logger.info("Kafka has recent ticks. This is a connection issue, not a holiday.")
+                        # Kafka has ticks, so it's a connection issue, not a holiday.
+                        logger.info("Kafka shows recent ticks.")
                 
+                else: # Still within retry attempts, simply reattempting connection
+                    logger.error(
+                        "[CRITICAL]: No new tick for %.0fs. Reattempting (%d/%d).",
+                        no_tick_duration, timeout_retries, config.MAX_TIMEOUT_RETRIES
+                    )
+
+                # Always force reconnection if critical timeout persists.
                 logger.error("Connection issue suspected. Forcing reconnection.")
                 self._shioaji_manager.reconnect(reason="Tick Timeout")
 
-            # 4b. Escalating Minor Timeout Warning.
-            # The threshold increases with each warning level (e.g., >60s, >120s, >180s).
-            elif no_tick_duration > current_warning_threshold + (config.SLOW_TICK_WARNING_INCREMENT * slow_tick_warning_level):
-                logger.warning("[Slow tick flow]: No new tick for %.0f seconds.", no_tick_duration)
+            # 4b. Escalating Slow Tick Warning.
+            # Threshold increases by 60s for each warning level.
+            elif no_tick_duration > current_warning_threshold + (60 * slow_tick_warning_level):
+                logger.warning("[SLOW]: No new tick for %.0fs.", no_tick_duration)
                 slow_tick_warning_level += 1
 
-            # 4c. Recovery Condition.
-            # This is now an ELIF, not an ELSE. It only triggers if the duration is *actually* back in the safe zone.
-            elif no_tick_duration < current_warning_threshold:
-                if slow_tick_warning_level > 0:
-                    logger.info("[Slow tick flow]: Recovered.")
-                    slow_tick_warning_level = 0
-
+            # 4c. Recovery from Slow Tick Warning.
+            elif no_tick_duration < current_warning_threshold and slow_tick_warning_level > 0:
+                logger.info("[RECOVERED]: Tick flow normal.")
+                slow_tick_warning_level = 0
 
     def stop(self):
         """Gracefully shuts down the service."""

@@ -27,16 +27,6 @@ def tick_to_dict(tick) -> dict:
         tick_dict[field] = float(tick_dict[field])
     return tick_dict
 
-def is_internet_available(host="8.8.8.8", port=53, timeout=2) -> bool:
-    """Checks for an active internet connection."""
-    try:
-        socket.setdefaulttimeout(timeout)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((host, port))
-        return True
-    except OSError:
-        return False
-
 def is_trading_time(dt_now: datetime = None, day_off_date: datetime.date = None) -> bool:
     """
     Checks if the current time is within allowed trading sessions,
@@ -49,7 +39,7 @@ def is_trading_time(dt_now: datetime = None, day_off_date: datetime.date = None)
     if dt_now.tzinfo is not None:
         dt_now = dt_now.replace(tzinfo=None)
         
-    buffer = timedelta(minutes=config.TRADING_BUFFER_MIN)
+    buffer = timedelta(seconds=2 * config.MONITOR_INTERVAL) # 20s to buffer around session open/close
 
     # Note: Use a fixed date to prevent issues with date changes during overnight sessions
     dummy_date = dt_now.date()
