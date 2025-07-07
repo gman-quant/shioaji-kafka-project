@@ -1,12 +1,13 @@
 # src/shioaji_kafka_bridge/kafka_handler.py
 
 import logging
-import time
 from datetime import datetime, timedelta, timezone
 
 from confluent_kafka import Producer, Consumer, TopicPartition
+
 from . import config
 from .exceptions import KafkaProducerError
+
 
 logger = logging.getLogger(__name__)
 

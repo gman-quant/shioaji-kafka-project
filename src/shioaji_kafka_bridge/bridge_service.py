@@ -1,14 +1,16 @@
 # src/shioaji_kafka_bridge/bridge_service.py
 
 import logging
-import time
 import threading
-import orjson
+import time
 from datetime import datetime
 
+import orjson
+
 from . import config, utils, kafka_handler
-from .shioaji_manager import ShioajiManager
 from .exceptions import APILoginFetchError
+from .shioaji_manager import ShioajiManager
+
 
 logger = logging.getLogger(__name__)
 

@@ -10,6 +10,7 @@ from shioaji_kafka_bridge import config, utils
 from shioaji_kafka_bridge.bridge_service import BridgeService
 from shioaji_kafka_bridge.exceptions import KafkaProducerError
 
+
 def main():
     """Main entry point for the Shioaji Kafka Bridge application."""
     

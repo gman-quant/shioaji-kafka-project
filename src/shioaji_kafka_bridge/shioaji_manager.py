@@ -1,13 +1,15 @@
 # src/shioaji_kafka_bridge/shioaji_manager.py
 
 import logging
-import time
 import threading
+import time
+
 import shioaji as sj
-from shioaji import TickFOPv1, Exchange
+from shioaji import Exchange, TickFOPv1
 
 from . import config
 from .exceptions import APILoginFetchError
+
 
 logger = logging.getLogger(__name__)
 

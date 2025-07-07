@@ -1,9 +1,10 @@
 # src/shioaji_kafka_bridge/utils.py
 
 import logging
-import socket
 from datetime import datetime, timedelta
+
 from . import config
+
 
 # Defines the fields within a Tick object that should be converted to float.
 FIELDS_TO_FLOAT = (
