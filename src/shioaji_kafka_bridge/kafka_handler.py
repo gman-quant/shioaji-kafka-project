@@ -18,17 +18,16 @@ def get_producer_config() -> dict:
     """
     return {
         'bootstrap.servers': config.KAFKA_BROKER,
-        # --- Optimization parameters ---
-        # Increase batching wait time and size to allow the producer to bundle more messages.
-        'linger.ms': 500,          # Wait up to 500ms (0.5s) to form a batch.
-        'batch.size': 65536,      # Send batch immediately if it reaches 64KB.
-        # Enable compression to significantly reduce network traffic.
-        'compression.type': 'zstd', # Or 'snappy'.
-        # --- Resource & Reliability parameters ---
-        # Provide a larger buffer to handle traffic spikes.
-        'queue.buffering.max.kbytes': 65536,  # 64MB.
-        # Maintain default reliability level.
-        'acks': 'all'
+        # Short linger time ensures low latency and prevents back-pressure.
+        'linger.ms': 20,
+        # Best balance of speed and reliability. `acks='all'` is too slow for this use case.
+        'acks': 1,
+        # Max batch size; batches are usually sent by `linger.ms` expiring first.
+        'batch.size': 32768,      # 32KB
+        # Large buffer to absorb traffic spikes and avoid blocking the producer.
+        'queue.buffering.max.kbytes': 65536,  # 64MB
+        # Efficient compression to reduce network bandwidth.
+        'compression.type': 'zstd',
     }
 
 def create_producer() -> Producer:
