@@ -132,13 +132,21 @@ After the service starts, you will see detailed log output in your terminal, inc
 
 ---
 
-### 📋 Example Log Output
+### 📋 Example Logs
 
-Here’s a real-world log snapshot from `journalctl` on a production server::
+Here’s a real-world snapshot of the service running in a production environment:
 
 ![Kafka Bridge Log](pics/kafka_bridge_log.png)
 
-These logs show market open/close detection, login status, and subscription confirmation.
+It demonstrates:
+
+- Market open/close detection  
+- Shioaji login/logout and tick subscription/unsubscription  
+- Tick flow monitoring (slow/normal)  
+- Kafka connection issues and recovery  
+- Graceful shutdown and restart behavior
+
+These logs help confirm correct operation and assist in diagnosing issues in production.
 
 ---
 
