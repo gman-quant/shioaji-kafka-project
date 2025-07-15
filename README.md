@@ -90,28 +90,33 @@ Follow these steps to set up your development environment:
     pip install -r requirements.txt
     ```
 
-4.  **Set up environment variables**:
-    The root directory includes a `.gitignore` file that ignores `.env` to protect your keys. Please create this file manually:
+4.  **Set up environment variables**:  
+    This project uses a `.env` file to manage sensitive credentials and runtime settings.  
+    An example environment file is provided as `.env.example`.
+
+    To get started, copy or rename it as `.env`:
 
     ```bash
-    # Create the .env file
-    touch .env
-    nano .env
+    cp .env.example .env
     ```
 
-    Then, add the following content to your `.env` file and replace the placeholders with your own settings:
+    Then, open `.env` and replace the placeholder values with your actual credentials and settings:
 
-    ```python
+    ```ini
     # .env
 
     # --- Shioaji API Credentials ---
-    SHIOAJI_API_KEY="YOUR_API_KEY"
-    SHIOAJI_SECRET_KEY="YOUR_SECRET_KEY"
+    SHIOAJI_API_KEY="your_real_api_key"
+    SHIOAJI_SECRET_KEY="your_real_secret_key"
 
     # --- Kafka Configuration ---
-    KAFKA_BROKER="your_kafka_broker_address:9092"
+    KAFKA_BROKER="yyour_kafka_broker_address:9092"
     KAFKA_TOPIC="your_target_topic_name"
     ```
+
+    > ⚠️ Make sure you do **not** commit your `.env` file to version control.  
+    > The `.gitignore` file already excludes it by default.
+
 
 ---
 
@@ -124,6 +129,16 @@ python src/main.py
 ```
 
 After the service starts, you will see detailed log output in your terminal, including the initial market status and connection details. To stop the service, press `Ctrl+C` for a graceful shutdown.
+
+---
+
+### 📋 Example Log Output
+
+Here’s a real-world log snapshot from `journalctl` on a production server::
+
+![Kafka Bridge Log](pics/kafka_bridge_log.png)
+
+These logs show market open/close detection, login status, and subscription confirmation.
 
 ---
 

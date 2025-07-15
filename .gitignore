@@ -4,7 +4,6 @@
 # Ignore environment variables files. Do not commit sensitive keys and settings.
 .env
 *.env
-.env.*
 
 # =============================================================================
 #  Python Virtual Environments
