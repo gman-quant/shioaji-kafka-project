@@ -127,6 +127,16 @@ After the service starts, you will see detailed log output in your terminal, inc
 
 ---
 
+### 📋 Example Log Output
+
+Here’s a real-world log snapshot from `journalctl` on a production server::
+
+![Kafka Bridge Log](pics/kafka_bridge_log.png)
+
+These logs show market open/close detection, login status, and subscription confirmation.
+
+---
+
 ## Configuration
 
 In addition to the settings in `.env`, some monitoring and runtime settings can be adjusted in `src/shioaji_kafka_bridge/config.py`:
