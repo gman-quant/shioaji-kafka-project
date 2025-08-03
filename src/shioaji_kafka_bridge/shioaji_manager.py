@@ -23,7 +23,6 @@ class ShioajiManager:
         self._reconnection_lock = threading.Lock()
         self.tick_callback = tick_callback  # Callback to execute when a tick arrives
         self.subscription_success_callback = subscription_success_callback
-        self._create_new_api_instance() # Initialize the first API object
 
     def _create_new_api_instance(self):
         """Creates and configures a new Shioaji API instance."""
@@ -56,7 +55,7 @@ class ShioajiManager:
                 logger.info("Tick Unsubscription。Confirmed.")
                 self._subscribed = False
                 self._api.logout()  # Clean up the API session after unsubscription
-                self._create_new_api_instance() # Create a fresh instance
+                self._api = None  # Clear the API instance
             self._pending_operation = None
 
     def _handle_session_down(self, reason: str = "API Disconnect"):
@@ -69,6 +68,7 @@ class ShioajiManager:
         logger.debug("Attempting to login and subscribe to TXF ticks...")
         try:
             logger.info("Logging in to Shioaji...")
+            self._create_new_api_instance() # Initialize API object
             self._api.login(api_key=config.SHIOAJI_API_KEY, secret_key=config.SHIOAJI_SECRET_KEY)
             
             # Retry mechanism for contract fetching
@@ -142,10 +142,7 @@ class ShioajiManager:
             except Exception as e:
                 logger.debug("Exception during old API logout (this is often ok): %s", e)
             
-            # Create a fresh instance
-            self._create_new_api_instance()
-            
-            # Attempt to log back in and subscribe
+            # Attempt to log in and subscribe
             self.connect_and_subscribe()
 
         except APILoginFetchError as e:
