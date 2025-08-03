@@ -23,9 +23,7 @@ class ShioajiManager:
         self._reconnection_lock = threading.Lock()
         self.tick_callback = tick_callback  # Callback to execute when a tick arrives
         self.subscription_success_callback = subscription_success_callback
-
-        # Initialize the first API object
-        self._create_new_api_instance()
+        self._create_new_api_instance() # Initialize the first API object
 
     def _create_new_api_instance(self):
         """Creates and configures a new Shioaji API instance."""
@@ -55,8 +53,10 @@ class ShioajiManager:
                     self.subscription_success_callback()
 
             elif self._pending_operation == "unsubscribe_tick":
-                logger.info("Tick Unsubscription Confirmed.")
+                logger.info("Tick Unsubscription。Confirmed.")
                 self._subscribed = False
+                self._api.logout()  # Clean up the API session after unsubscription
+                self._create_new_api_instance() # Create a fresh instance
             self._pending_operation = None
 
     def _handle_session_down(self, reason: str = "API Disconnect"):
@@ -136,12 +136,11 @@ class ShioajiManager:
             self._pending_operation = None
 
             # Cleanly destroy the old API object
-            if self._api:
-                try:
-                    self._api.logout()
-                    logger.debug("Old API object logged out.")
-                except Exception as e:
-                    logger.debug("Exception during old API logout (this is often ok): %s", e)
+            try:
+                self._api.logout()
+                logger.debug("Old API object logged out.")
+            except Exception as e:
+                logger.debug("Exception during old API logout (this is often ok): %s", e)
             
             # Create a fresh instance
             self._create_new_api_instance()
