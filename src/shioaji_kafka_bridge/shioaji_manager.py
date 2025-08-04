@@ -54,8 +54,6 @@ class ShioajiManager:
             elif self._pending_operation == "unsubscribe_tick":
                 logger.info("Tick Unsubscription。Confirmed.")
                 self._subscribed = False
-                self._api.logout()  # Clean up the API session after unsubscription
-                self._api = None  # Clear the API instance
             self._pending_operation = None
 
     def _handle_session_down(self, reason: str = "API Disconnect"):
@@ -116,6 +114,18 @@ class ShioajiManager:
             logger.info("Sending tick unsubscription request...")
             self._pending_operation = "unsubscribe_tick"
             self._api.quote.unsubscribe(self._api.Contracts.Futures.TXF.TXFR1)
+
+            # Wait for the unsubscription to be confirmed
+            for _ in range(100):
+                if self._pending_operation is None and not self._subscribed:
+                    break
+                time.sleep(0.1)
+            else:
+                logger.warning("Unsubscription confirmation timeout. Proceeding with caution.")
+
+            # Ensure we are logged out after unsubscription
+            self.logout()
+
         except Exception as e:
             self._pending_operation = None
             logger.warning("Tick unsubscription request failed: %s", e)
@@ -135,12 +145,8 @@ class ShioajiManager:
             self._subscribed = False
             self._pending_operation = None
 
-            # Cleanly destroy the old API object
-            try:
-                self._api.logout()
-                logger.debug("Old API object logged out.")
-            except Exception as e:
-                logger.debug("Exception during old API logout (this is often ok): %s", e)
+            # Ensure we are logged out before reconnecting
+            self.logout()
             
             # Attempt to log in and subscribe
             self.connect_and_subscribe()
@@ -155,9 +161,13 @@ class ShioajiManager:
 
     def logout(self):
         """Logs out from the Shioaji API."""
+        if self._api is None:
+            return
         try:
-            logger.info("Logging out from Shioaji API...")
+            logger.debug("Logging out from Shioaji API...")
             self._api.logout()
-            logger.info("Shioaji API logged out.")
+            logger.debug("Shioaji API logged out.")
         except Exception as e:
             logger.error("Failed to log out from Shioaji API: %s", e)
+        finally:
+            self._api = None
