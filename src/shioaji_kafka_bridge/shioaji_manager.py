@@ -161,13 +161,15 @@ class ShioajiManager:
 
     def logout(self):
         """Logs out from the Shioaji API."""
-        if self._api is None:
+        api = self._api  # Copy reference first
+        self._api = None  # Clear self._api immediately to prevent race conditions
+
+        if api is None:
             return
+        
         try:
             logger.debug("Logging out from Shioaji API...")
-            self._api.logout()
+            api.logout()
             logger.debug("Shioaji API logged out.")
         except Exception as e:
             logger.error("Failed to log out from Shioaji API: %s", e)
-        finally:
-            self._api = None
