@@ -52,7 +52,7 @@ class ShioajiManager:
                     self.subscription_success_callback()
 
             elif self._pending_operation == "unsubscribe_tick":
-                logger.info("Tick Unsubscription。Confirmed.")
+                logger.info("Tick Unsubscription Confirmed.")
                 self._subscribed = False
             self._pending_operation = None
 
