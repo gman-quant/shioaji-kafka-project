@@ -110,7 +110,7 @@ Follow these steps to set up your development environment:
     SHIOAJI_SECRET_KEY="your_real_secret_key"
 
     # --- Kafka Configuration ---
-    KAFKA_BROKER="yyour_kafka_broker_address:9092"
+    KAFKA_BROKER="your_kafka_broker_address:9092"
     KAFKA_TOPIC="your_target_topic_name"
     ```
 
