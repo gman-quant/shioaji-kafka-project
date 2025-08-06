@@ -125,7 +125,7 @@ class BridgeService:
                 
                 if timeout_retries > config.MAX_TIMEOUT_RETRIES:
                     # Reached max attempts, now determine the root cause (holiday vs connection)
-                    logger.error("[CRITICAL]: Max retries exceeded. Cheaking Kafka ticks.")
+                    logger.error("[CRITICAL]: Max retries exceeded. Checking Kafka ticks.")
                     if not kafka_handler.has_opening_kafka_ticks():
                         logger.info("No recent Kafka ticks.")
                         logger.info("Holiday suspected. Entering sleep mode.")
