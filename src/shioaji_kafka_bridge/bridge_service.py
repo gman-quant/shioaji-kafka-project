@@ -102,6 +102,9 @@ class BridgeService:
                 timeout_retries = 0
                 slow_tick_warning_level = 0
                 continue
+            else:
+                # Reset day_off_date if we are back in trading hours
+                self.day_off_date = None
             
             # --- From here, we are confirmed to be IN TRADING HOURS ---
 

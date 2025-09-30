@@ -27,49 +27,80 @@ def tick_to_dict(tick) -> dict:
     for field in FIELDS_TO_FLOAT:
         tick_dict[field] = float(tick_dict[field])
     return tick_dict
-
 def is_trading_time(dt_now: datetime = None, day_off_date: datetime.date = None) -> bool:
     """
-    Checks if the current time is within allowed trading sessions,
-    considering day/night sessions, buffer time, weekends, and holidays.
-    """
-    if day_off_date and dt_now.date() == day_off_date:
-        return False
+    Determine whether the given datetime falls within valid trading sessions.
 
+    Trading rules considered:
+      - Day and night sessions (with configurable start/end times).
+      - Buffer time before session start and after session end 
+        (to account for slight timing drifts).
+      - Weekends (Saturday night close, full Sunday off, Monday pre-open).
+      - Holidays (full day off and the following day's day-session pre-open).
+
+    Args:
+        dt_now (datetime, optional): The datetime to evaluate. 
+                                     Defaults to current local time if None.
+        day_off_date (date, optional): Specific holiday date (non-trading day).
+                                       If provided, both that date and the 
+                                       next day's early morning before 
+                                       day-session open are treated as closed.
+
+    Returns:
+        bool: True if trading is open, False otherwise.
+    """
     dt_now = dt_now or datetime.now()
+
+    # Normalize tz-aware datetime into naive datetime (local reference).
     if dt_now.tzinfo is not None:
         dt_now = dt_now.replace(tzinfo=None)
         
-    buffer = timedelta(seconds=2 * config.MONITOR_INTERVAL) # 20s to buffer around session open/close
+    # Buffer time (e.g., 20s if MONITOR_INTERVAL=10s) around open/close.
+    buffer = timedelta(seconds=2 * config.MONITOR_INTERVAL)
 
-    # Note: Use a fixed date to prevent issues with date changes during overnight sessions
+    # Fix to current date to avoid issues with overnight sessions spanning midnight.
     dummy_date = dt_now.date()
     
+    # Session boundaries (with buffer adjustment).
     day_open    = (datetime.combine(dummy_date, config.DAY_SESSION_START)   - buffer).time()
     day_close   = (datetime.combine(dummy_date, config.DAY_SESSION_END)     + buffer).time()
     night_open  = (datetime.combine(dummy_date, config.NIGHT_SESSION_START) - buffer).time()
     night_close = (datetime.combine(dummy_date, config.NIGHT_SESSION_END)   + buffer).time()
 
     time_now = dt_now.time()
-    weekday = dt_now.weekday()  # Monday ~ Sunday = 0 ~ 6
+    weekday = dt_now.weekday()  # Monday=0 ... Sunday=6
 
-    if weekday == 6:  # Sunday is always a non-trading day
+    # --- Holiday check ---
+    if day_off_date:
+        # Entire holiday is closed.
+        if dt_now.date() == day_off_date:
+            return False
+        # Following day: closed until day session opens.
+        if dt_now.date() == (day_off_date + timedelta(days=1)) and time_now < day_open:
+            return False
+
+    # --- Weekend check ---
+    if weekday == 6:  # Full Sunday is non-trading
         return False
     
-    if weekday == 5 and time_now >= night_close and night_open > night_close: # Saturday after night session close
+    if weekday == 5 and time_now >= night_close and night_open > night_close:
+        # Saturday after night session ends (markets closed)
         return False
 
-    if weekday == 0 and time_now < day_open: # Monday before day session open
+    if weekday == 0 and time_now < day_open:  
+        # Monday before day session opens
         return False
 
+    # --- Regular sessions ---
     is_in_day_session = day_open <= time_now < day_close
     is_in_night_session = (
         night_open <= time_now < night_close
-        if night_open < night_close  # same-day night session
-        else time_now >= night_open or time_now < night_close  # overnight session
+        if night_open < night_close  # Same-day night session
+        else time_now >= night_open or time_now < night_close  # Overnight night session
     )
 
     return is_in_day_session or is_in_night_session
+
 
 def get_current_warning_threshold(dt_now: datetime) -> int:
     """
