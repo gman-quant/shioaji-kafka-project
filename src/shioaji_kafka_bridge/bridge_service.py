@@ -92,7 +92,7 @@ class BridgeService:
                 was_trading = is_currently_trading
                 # Reset holiday marker if we are back in trading hours
                 if is_currently_trading and self.day_off_date is not None:
-                    logger.bug("Market reopened. Clearing holiday marker (day_off_date).")
+                    logger.debug("Market reopened. Clearing holiday marker (day_off_date).")
                     self.day_off_date = None
 
             # --- Block 2: Handle Non-Trading Hours ---
