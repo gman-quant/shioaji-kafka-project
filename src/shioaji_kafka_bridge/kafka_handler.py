@@ -19,13 +19,13 @@ def get_producer_config() -> dict:
     return {
         'bootstrap.servers': config.KAFKA_BROKER,
         # Short linger time ensures low latency and prevents back-pressure.
-        'linger.ms': 20,
+        'linger.ms': 100,
         # Best balance of speed and reliability. `acks='all'` is too slow for this use case.
         'acks': 1,
         # Max batch size; batches are usually sent by `linger.ms` expiring first.
-        'batch.size': 32768,      # 32KB
+        'batch.size': 262144,      # 256KB
         # Large buffer to absorb traffic spikes and avoid blocking the producer.
-        'queue.buffering.max.kbytes': 65536,  # 64MB
+        'queue.buffering.max.kbytes': 131072,  # 128MB
         # Efficient compression to reduce network bandwidth.
         'compression.type': 'zstd',
     }
